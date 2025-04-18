@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Racing Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            background-image: url('https://via.placeholder.com/600x400/0000FF/808080?Text=Road'); /* Replace with your road background image */
+            background-size: cover;
+            overflow: hidden;
+            border: 3px solid #000;
+        }
+
+        #car {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            width: 50px;
+            height: 100px;
+            background-image: url('car.jpg'); /* Replace with your car image */
+            background-size: cover;
+            transform: translateX(-50%);
+        }
+
+        .obstacle {
+            position: absolute;
+            top: -50px; /* Start above the screen */
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            border-radius: 5px;
+        }
+
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            color: white;
+        }
+
+        #level {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 18px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="car"></div>
+        <div id="score">Score: 0</div>
+        <div id="level">Level: 1</div>
+    </div>
+
+    <script>
+        // Game Variables
+        let car = document.getElementById('car');
+        let gameContainer = document.getElementById('game-container');
+        let scoreElement = document.getElementById('score');
+        let levelElement = document.getElementById('level');
+        let carPosition = { x: 275, y: 300 };
+        let obstacles = [];
+        let score = 0;
+        let level = 1;
+        let speed = 2;
+
+        // Move car with arrow keys
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowLeft' && carPosition.x > 0) {
+                carPosition.x -= 20;
+            } else if (e.key === 'ArrowRight' && carPosition.x < gameContainer.offsetWidth - car.offsetWidth) {
+                carPosition.x += 20;
+            }
+            car.style.left = carPosition.x + 'px';
+        });
+
+        // Create obstacles
+        function createObstacle() {
+            let obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            let obstaclePositionX = Math.random() * (gameContainer.offsetWidth - 50);
+            obstacle.style.left = obstaclePositionX + 'px';
+            gameContainer.appendChild(obstacle);
+            obstacles.push(obstacle);
+        }
+
+        // Move obstacles
+        function moveObstacles() {
+            for (let i = 0; i < obstacles.length; i++) {
+                let obstacle = obstacles[i];
+                let currentTop = parseInt(window.getComputedStyle(obstacle).top);
+                if (currentTop > gameContainer.offsetHeight) {
+                    obstacle.remove();
+                    obstacles.splice(i, 1);
+                    score++;
+                    scoreElement.textContent = 'Score: ' + score;
+                } else {
+                    obstacle.style.top = currentTop + speed + 'px';
+                }
+            }
+        }
+
+        // Check for collisions
+        function checkCollision() {
+            for (let i = 0; i < obstacles.length; i++) {
+                let obstacle = obstacles[i];
+                let carRect = car.getBoundingClientRect();
+                let obstacleRect = obstacle.getBoundingClientRect();
+
+                if (
+                    carRect.left < obstacleRect.left + obstacleRect.width &&
+                    carRect.left + carRect.width > obstacleRect.left &&
+                    carRect.top < obstacleRect.top + obstacleRect.height &&
+                    carRect.top + carRect.height > obstacleRect.top
+                ) {
+                    alert('Game Over! Your final score is: ' + score);
+                    resetGame();
+                }
+            }
+        }
+
+        // Update the level
+        function updateLevel() {
+            if (score % 5 === 0 && score > 0) {
+                level++;
+                speed += 0.5; // Increase speed with level
+                levelElement.textContent = 'Level: ' + level;
+            }
+        }
+
+        // Reset the game
+        function resetGame() {
+            score = 0;
+            level = 1;
+            speed = 2;
+            scoreElement.textContent = 'Score: ' + score;
+            levelElement.textContent = 'Level: ' + level;
+            obstacles.forEach(obstacle => obstacle.remove());
+            obstacles = [];
+            carPosition.x = 275;
+            car.style.left = carPosition.x + 'px';
+        }
+
+        // Game loop
+        function gameLoop() {
+            moveObstacles();
+            checkCollision();
+            updateLevel();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Generate obstacles at regular intervals
+        setInterval(createObstacle, 1500);
+
+        // Start the game
+        gameLoop();
+    </script>
+</body>
+</html>
