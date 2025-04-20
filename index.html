@@ -9,7 +9,7 @@
     body {
       font-family: sans-serif;
       background: #222;
-      overflow: hidden;
+      overflow-x: hidden;
     }
     #game {
       width: 400px;
@@ -72,6 +72,26 @@
       font-size: 20px;
       cursor: pointer;
     }
+
+    /* Mobile control buttons */
+    #controls {
+      width: 400px;
+      margin: 10px auto;
+      display: flex;
+      justify-content: space-between;
+    }
+    #controls button {
+      width: 48%;
+      font-size: 30px;
+      padding: 15px 0;
+      background: #444;
+      color: white;
+      border: none;
+      border-radius: 10px;
+    }
+    #controls button:active {
+      background: #666;
+    }
   </style>
 </head>
 <body>
@@ -89,6 +109,13 @@
     </div>
   </div>
 
+  <!-- Mobile Buttons -->
+  <div id="controls">
+    <button id="leftBtn">⬅️</button>
+    <button id="rightBtn">➡️</button>
+  </div>
+
+  <!-- Sounds -->
   <audio id="crashSound" src="https://assets.mixkit.co/sfx/preview/mixkit-car-crash-with-glass-accident-1641.mp3"></audio>
   <audio id="coinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-coin-win-1993.mp3"></audio>
 
@@ -101,6 +128,9 @@
     const coinSound = document.getElementById('coinSound');
     const scoreBoard = document.getElementById('scoreBoard');
 
+    const leftBtn = document.getElementById('leftBtn');
+    const rightBtn = document.getElementById('rightBtn');
+
     let enemies = [];
     let coins = [];
     let gameRunning = false;
@@ -109,7 +139,6 @@
     let moveLeft = false;
     let moveRight = false;
     let coinScore = 0;
-    let backgroundY = 0;
 
     function startGame() {
       startScreen.style.display = 'none';
@@ -142,7 +171,6 @@
         enemy.style.top = '-100px';
         game.appendChild(enemy);
         enemies.push(enemy);
-
         if (gameSpeed < 10) gameSpeed += 0.05;
       }, 1000);
     }
@@ -165,37 +193,30 @@
     function gameLoop() {
       if (!gameRunning) return;
 
-      // Move car
       const carLeft = parseInt(car.style.left);
       if (moveLeft && carLeft > 0) car.style.left = (carLeft - 5) + 'px';
       if (moveRight && carLeft < 350) car.style.left = (carLeft + 5) + 'px';
 
-      // Move enemies
       enemies.forEach((enemy, index) => {
         const top = parseInt(enemy.style.top);
         enemy.style.top = (top + gameSpeed) + 'px';
-
         if (top > 600) {
           enemy.remove();
           enemies.splice(index, 1);
         }
-
         if (checkCollision(car, enemy)) {
           crashSound.play();
           endGame();
         }
       });
 
-      // Move coins
       coins.forEach((coin, index) => {
         const top = parseInt(coin.style.top);
         coin.style.top = (top + gameSpeed) + 'px';
-
         if (top > 600) {
           coin.remove();
           coins.splice(index, 1);
         }
-
         if (checkCollision(car, coin)) {
           coinSound.play();
           coin.remove();
@@ -226,16 +247,22 @@
       );
     }
 
+    // Keyboard Controls
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') moveLeft = true;
       if (e.key === 'ArrowRight') moveRight = true;
       if (e.key === 'Enter' && !gameRunning) resetGame();
     });
-
     document.addEventListener('keyup', (e) => {
       if (e.key === 'ArrowLeft') moveLeft = false;
       if (e.key === 'ArrowRight') moveRight = false;
     });
+
+    // Touch Controls
+    leftBtn.addEventListener('touchstart', () => moveLeft = true);
+    leftBtn.addEventListener('touchend', () => moveLeft = false);
+    rightBtn.addEventListener('touchstart', () => moveRight = true);
+    rightBtn.addEventListener('touchend', () => moveRight = false);
   </script>
 </body>
 </html>
